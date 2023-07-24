@@ -8,8 +8,12 @@ import io.netty.channel.EventLoopGroup;
 import io.netty.channel.nio.NioEventLoopGroup;
 import io.netty.channel.socket.SocketChannel;
 import io.netty.channel.socket.nio.NioServerSocketChannel;
+import io.netty.handler.codec.serialization.ClassResolvers;
+import io.netty.handler.codec.serialization.ObjectDecoder;
+import io.netty.handler.codec.serialization.ObjectEncoder;
 import io.netty.handler.logging.LogLevel;
 import io.netty.handler.logging.LoggingHandler;
+import object.ObjectServerHandler;
 
 public class EchoServer {
   public static void main(String[] args) throws Exception {
@@ -37,10 +41,17 @@ public class EchoServer {
               System.out.println("EchoServer.initChannel");
               ChannelPipeline p = ch.pipeline();
               // 연결된 클라이언트 소켓 채널에 설정된 파이프라인
-              p.addLast(new CommonHandler());
+//              p.addLast(new CommonHandler());
 
 //              p.addLast(new EchoServerHandler());
               // 접속된 클라이언트로부터 수신된 데이터를 처리하는 핸들러 등록
+
+                p.addLast(new ObjectDecoder( 1024 * 1024,
+                        ClassResolvers
+                                .weakCachingConcurrentResolver(this
+                                        .getClass()
+                                        .getClassLoader())),new ObjectEncoder());
+                p.addLast(new ObjectServerHandler());
             }
           });
       ChannelFuture f = b.bind(8888).sync(); // 해당 port로 클라이언트 접속을 허용

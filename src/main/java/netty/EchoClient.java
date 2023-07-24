@@ -8,6 +8,10 @@ import io.netty.channel.EventLoopGroup;
 import io.netty.channel.nio.NioEventLoopGroup;
 import io.netty.channel.socket.SocketChannel;
 import io.netty.channel.socket.nio.NioSocketChannel;
+import io.netty.handler.codec.serialization.ClassResolvers;
+import io.netty.handler.codec.serialization.ObjectDecoder;
+import io.netty.handler.codec.serialization.ObjectEncoder;
+import object.ObjectClientHandler;
 
 public final class EchoClient {
   public static void main(String[] args) throws Exception {
@@ -22,8 +26,15 @@ public final class EchoClient {
             @Override
             public void initChannel(SocketChannel ch) throws Exception {
               ChannelPipeline p = ch.pipeline();
-              p.addLast(new CommonHandler());
+//              p.addLast(new CommonHandler());
 //              p.addLast(new EchoClientHandler());
+
+                p.addLast(new ObjectDecoder( 1024 * 1024,
+                        ClassResolvers
+                                .weakCachingConcurrentResolver(this
+                                        .getClass()
+                                        .getClassLoader())),new ObjectEncoder());
+                p.addLast(new ObjectClientHandler());
             }
           });
 
